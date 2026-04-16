@@ -1,0 +1,29 @@
+{
+  "generation": 2,
+  "child": 1,
+  "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_2/child_1.md",
+  "val_accuracy": 0.6192,
+  "param_count": 620810,
+  "wall_time_sec": 182.22,
+  "timed_out": true,
+  "param_exceeded": false,
+  "training_curve": [
+    {
+      "epoch": 1,
+      "total_epochs": 2,
+      "loss": 1.8013,
+      "acc": 0.3309,
+      "elapsed_sec": 90.0,
+      "epoch_sec": 86.28
+    },
+    {
+      "epoch": 2,
+      "total_epochs": 2,
+      "loss": 1.4396,
+      "acc": 0.4774,
+      "elapsed_sec": 175.1,
+      "epoch_sec": 85.14
+    }
+  ],
+  "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+}
