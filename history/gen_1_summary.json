@@ -1,0 +1,143 @@
+{
+  "generation": 1,
+  "best_accuracy": 0.6109,
+  "leaderboard": [
+    {
+      "generation": 1,
+      "child": 1,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_1.md",
+      "val_accuracy": 0.6109,
+      "param_count": 620810,
+      "wall_time_sec": 182.19,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 2,
+          "loss": 1.6341,
+          "acc": 0.3967,
+          "elapsed_sec": 84.2,
+          "epoch_sec": 62.82
+        },
+        {
+          "epoch": 2,
+          "total_epochs": 2,
+          "loss": 1.3353,
+          "acc": 0.5145,
+          "elapsed_sec": 164.3,
+          "epoch_sec": 62.44
+        }
+      ],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 1,
+      "child": 0,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_0.md",
+      "val_accuracy": 0.6086,
+      "param_count": 620810,
+      "wall_time_sec": 182.26,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 3,
+          "loss": 1.6219,
+          "acc": 0.4005,
+          "elapsed_sec": 87.8,
+          "epoch_sec": 83.6
+        },
+        {
+          "epoch": 2,
+          "total_epochs": 3,
+          "loss": 1.312,
+          "acc": 0.5254,
+          "elapsed_sec": 170.1,
+          "epoch_sec": 82.29
+        }
+      ],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 1,
+      "child": 2,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_2.md",
+      "val_accuracy": 0.6045,
+      "param_count": 189130,
+      "wall_time_sec": 182.24,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 3,
+          "loss": 1.6014,
+          "acc": 0.4065,
+          "elapsed_sec": 76.9,
+          "epoch_sec": 73.42
+        },
+        {
+          "epoch": 2,
+          "total_epochs": 3,
+          "loss": 1.266,
+          "acc": 0.541,
+          "elapsed_sec": 150.5,
+          "epoch_sec": 73.67
+        }
+      ],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 1,
+      "child": 3,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_3.md",
+      "val_accuracy": 0.5303,
+      "param_count": 620810,
+      "wall_time_sec": 182.3,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 3,
+          "loss": 1.8306,
+          "acc": 0.3179,
+          "elapsed_sec": 88.1,
+          "epoch_sec": 84.58
+        },
+        {
+          "epoch": 2,
+          "total_epochs": 3,
+          "loss": 1.5014,
+          "acc": 0.4396,
+          "elapsed_sec": 170.2,
+          "epoch_sec": 82.18
+        }
+      ],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 1,
+      "child": 4,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_4.md",
+      "val_accuracy": 0.5043,
+      "param_count": 299082,
+      "wall_time_sec": 182.23,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 3,
+          "loss": 1.6265,
+          "acc": 0.4758,
+          "elapsed_sec": 149.2,
+          "epoch_sec": 145.75
+        }
+      ],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    }
+  ]
+}
