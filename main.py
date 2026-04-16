@@ -1,0 +1,60 @@
+"""Top-level HyperAgent loop. Usage: uv run main.py [--generations N] [--start-gen N]"""
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+from hyperagent.spawn_child import spawn_child
+from hyperagent.evaluate import evaluate_child
+from hyperagent.evolve import evolve_generation
+
+ROOT = Path(__file__).parent
+NUM_CHILDREN = 5
+
+
+def run_generation(gen: int):
+    prompt_dir = ROOT / "prompts" / f"gen_{gen}"
+    if not prompt_dir.exists():
+        print(f"ERROR: No prompts for generation {gen} at {prompt_dir}")
+        sys.exit(1)
+
+    prompts = sorted(prompt_dir.glob("child_*.md"))
+    if not prompts:
+        print(f"ERROR: No child_*.md files in {prompt_dir}")
+        sys.exit(1)
+
+    print(f"\n{'='*60}")
+    print(f"Generation {gen} — {len(prompts)} children to evaluate")
+    print(f"Files to create: models/gen_{gen}/, logs/gen_{gen}/")
+    print(f"{'='*60}")
+
+    for prompt_file in prompts:
+        k = int(prompt_file.stem.split("_")[1])
+        spawn_child(gen, k, prompt_file)
+        evaluate_child(gen, k, prompt_file)
+
+    best_acc = evolve_generation(gen)
+
+    print(f"\nStep 4 — Git commit for generation {gen} (best_acc={best_acc:.4f})")
+    subprocess.run(["git", "add", "-A"], cwd=ROOT)
+    subprocess.run(
+        ["git", "commit", "-m", f"gen_{gen}: best_acc={best_acc:.4f}"],
+        cwd=ROOT,
+    )
+    subprocess.run(["git", "push"], cwd=ROOT)
+    return best_acc
+
+
+def main():
+    parser = argparse.ArgumentParser(description="HyperAgent CIFAR genetic loop")
+    parser.add_argument("--generations", type=int, default=3)
+    parser.add_argument("--start-gen", type=int, default=0)
+    args = parser.parse_args()
+
+    for gen in range(args.start_gen, args.start_gen + args.generations):
+        best = run_generation(gen)
+        print(f"\n>>> Generation {gen} complete. Best val_accuracy: {best:.4f}\n")
+
+
+if __name__ == "__main__":
+    main()
