@@ -1,5 +1,7 @@
 """Step 2: Run a child model, hard-kill at 3 min, write JSON log."""
 import json
+import os
+import signal
 import subprocess
 import threading
 import time
@@ -28,6 +30,7 @@ def evaluate_child(gen: int, k: int, prompt_file: Path) -> dict:
         ["uv", "run", str(model_file)],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         text=True, cwd=ROOT,
+        start_new_session=True,  # put in own process group so kill reaches children
     )
 
     # Hard-kill after MAX_WALL_SEC regardless of output
@@ -100,8 +103,9 @@ def _parse_epoch_line(line: str, elapsed: float, epoch_sec_fallback: float) -> d
 
 
 def _kill(proc: subprocess.Popen):
+    """Kill the entire process group (uv + spawned Python child)."""
     try:
-        proc.kill()
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
     except ProcessLookupError:
         pass
 
