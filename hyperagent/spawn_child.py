@@ -36,18 +36,29 @@ ARCHITECTURE & TRAINING SPECIFICATION:
 {spec}
 """
 
-    result = subprocess.run(
-        ["claude", "--print", full_prompt],
-        capture_output=True, text=True, timeout=CLAUDE_TIMEOUT,
-    )
-
-    code = _extract_code(result.stdout)
+    print(f"  Calling claude (timeout={CLAUDE_TIMEOUT}s) ...")
+    code = _run_claude(full_prompt)
     if not code:
         raise ValueError(f"No Python code found in claude output for gen={gen} child={k}\n{result.stdout[:300]}")
 
     model_file.write_text(code)
     print(f"  Written: {len(code)} chars")
     return model_file
+
+
+def _run_claude(prompt: str) -> str:
+    """Run claude --print and stream output to terminal while capturing it."""
+    proc = subprocess.Popen(
+        ["claude", "--print", prompt],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True,
+    )
+    lines = []
+    for line in proc.stdout:
+        print(line, end="", flush=True)
+        lines.append(line)
+    proc.wait(timeout=CLAUDE_TIMEOUT)
+    return _extract_code("".join(lines))
 
 
 def _extract_code(text: str) -> str:
