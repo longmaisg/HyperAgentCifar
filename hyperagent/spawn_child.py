@@ -32,8 +32,9 @@ HARD RULES (never break these):
 - Exit code 0 on success, non-zero on error.
 
 PROGRESS PRINTING (required — use these exact formats):
-- After each training epoch print a JSON line:
-    import json; print("EPOCH_JSON=" + json.dumps({{"epoch": epoch, "total": total_epochs, "loss": round(loss, 4), "acc": round(acc, 4)}})); sys.stdout.flush()
+- Use `import time` and record `epoch_start = time.time()` at the start of each epoch.
+- After each training epoch compute `epoch_sec = round(time.time() - epoch_start, 2)` then print:
+    import json; print("EPOCH_JSON=" + json.dumps({{"epoch": epoch, "total": total_epochs, "loss": round(loss, 4), "acc": round(acc, 4), "epoch_sec": epoch_sec}})); sys.stdout.flush()
 - Each test batch (every 10 batches): print  Test batch <n>/<total>  then sys.stdout.flush()
 
 ARCHITECTURE & TRAINING SPECIFICATION:

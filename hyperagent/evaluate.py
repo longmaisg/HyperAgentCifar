@@ -80,7 +80,7 @@ def evaluate_child(gen: int, k: int, prompt_file: Path) -> dict:
     return log
 
 
-def _parse_epoch_line(line: str, elapsed: float, epoch_sec: float) -> dict | None:
+def _parse_epoch_line(line: str, elapsed: float, epoch_sec_fallback: float) -> dict | None:
     """Parse 'EPOCH_JSON={...}' line into a training curve entry."""
     if not line.startswith("EPOCH_JSON="):
         return None
@@ -92,7 +92,8 @@ def _parse_epoch_line(line: str, elapsed: float, epoch_sec: float) -> dict | Non
             "loss": float(data["loss"]),
             "acc": float(data["acc"]),
             "elapsed_sec": round(elapsed, 1),
-            "epoch_sec": round(epoch_sec, 1),
+            # prefer timing from the model itself; fall back to wall-clock delta
+            "epoch_sec": float(data.get("epoch_sec", round(epoch_sec_fallback, 1))),
         }
     except (KeyError, ValueError, json.JSONDecodeError):
         return None
