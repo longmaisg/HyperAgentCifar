@@ -47,3 +47,42 @@ def plot_generation(gen: int):
     fig.savefig(out, dpi=120, bbox_inches="tight")
     plt.close(fig)
     print(f"  Plot   : history/gen_{gen}_curve.png")
+
+
+def plot_all_generations():
+    """Plot best and mean val_accuracy across all completed generations."""
+    history_dir = ROOT / "history"
+    summaries = sorted(history_dir.glob("gen_*_summary.json"))
+    if not summaries:
+        return
+
+    gens, bests, means = [], [], []
+    for path in summaries:
+        data = json.loads(path.read_text())
+        g = data["generation"]
+        accs = [e["val_accuracy"] for e in data["leaderboard"]]
+        gens.append(g)
+        bests.append(max(accs))
+        means.append(sum(accs) / len(accs) if accs else 0)
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.plot(gens, bests, marker="o", color="tab:blue", label="best val_acc")
+    ax.plot(gens, means, marker="s", linestyle="--", color="tab:orange", label="mean val_acc")
+    ax.fill_between(gens, means, bests, alpha=0.1, color="tab:blue")
+
+    for g, b in zip(gens, bests):
+        ax.annotate(f"{b:.3f}", (g, b), textcoords="offset points",
+                    xytext=(0, 6), ha="center", fontsize=7)
+
+    ax.set_title("HyperAgent CIFAR — accuracy over generations")
+    ax.set_xlabel("Generation")
+    ax.set_ylabel("Val Accuracy")
+    ax.set_xticks(gens)
+    ax.set_ylim(0, 1)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    out = history_dir / "all_generations.png"
+    fig.savefig(out, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Plot   : history/all_generations.png")

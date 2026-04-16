@@ -15,7 +15,7 @@ Each **iteration** of HyperAgent works as follows:
 ## HARD CONSTRAINTS (never violate)
 
 - PyTorch model for **CIFAR-10** only.
-- Training + evaluation must finish in **≤ 3 minutes** (wall clock).
+- Training + evaluation must finish in **≤ 1 minute** (wall clock). Hard-killed at 60s.
 - Model must have **≤ 1 000 000 parameters**.
 - Use `uv` for all Python dependency management (never `pip`).
 - Keep every source file **≤ 100 lines**; split into modules if needed.

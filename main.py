@@ -8,7 +8,7 @@ from pathlib import Path
 from hyperagent.spawn_child import spawn_child
 from hyperagent.evaluate import evaluate_child
 from hyperagent.evolve import evolve_generation
-from hyperagent.plot import plot_generation
+from hyperagent.plot import plot_generation, plot_all_generations
 
 ROOT = Path(__file__).parent
 NUM_CHILDREN = 5
@@ -57,6 +57,7 @@ def run_generation(gen: int):
         evaluate_child(gen, k, prompt_file)
 
     plot_generation(gen)
+    plot_all_generations()
 
     best_acc = evolve_generation(gen)
 
@@ -72,7 +73,7 @@ def run_generation(gen: int):
 
 def main():
     parser = argparse.ArgumentParser(description="HyperAgent CIFAR genetic loop")
-    parser.add_argument("--generations", type=int, default=6)
+    parser.add_argument("--generations", type=int, default=10)
     parser.add_argument("--start-gen", type=int, default=0)
     parser.add_argument("--fresh", action="store_false",
                         help="Delete all models/logs/history before starting")

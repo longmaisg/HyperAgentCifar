@@ -29,9 +29,10 @@ HARD RULES (never break these):
 - Use only torch and torchvision. No other ML libraries.
 - Data directory: {data_dir}
 - Exit code 0 on success, non-zero on error.
-- Total wall time budget is ~170 seconds on CPU (no GPU). Design epoch count accordingly.
-  A safe rule: if 1 epoch takes T seconds, use at most floor(150 / T) epochs.
-  Measure the first epoch and adapt if needed.
+- Total wall time budget is 55 seconds on CPU (no GPU). The process is hard-killed at 60s.
+  A safe rule: if 1 epoch takes T seconds, use at most floor(45 / T) epochs (min 1).
+  Measure the first epoch time and reduce epochs dynamically if needed.
+  Use a small fast model — depthwise convs, small channels — to fit more epochs in budget.
 
 PROGRESS PRINTING (required — use these exact formats):
 - Use `import time` and record `epoch_start = time.time()` at the start of each epoch.

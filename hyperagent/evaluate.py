@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
-MAX_WALL_SEC = 180
+MAX_WALL_SEC = 60
 MAX_PARAMS = 1_000_000
 
 
