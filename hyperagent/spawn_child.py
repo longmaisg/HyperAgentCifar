@@ -23,7 +23,7 @@ def spawn_child(gen: int, k: int, prompt_file: Path) -> Path:
     full_prompt = f"""Write a complete PyTorch CIFAR-10 training and evaluation script.
 
 HARD RULES (never break these):
-- Output ONLY valid Python code. No markdown fences, no prose outside comments.
+- Output ONLY a single Python code block (```python ... ```). No prose before or after.
 - Print  PARAM_COUNT=<integer>  before training starts.
 - Print  VAL_ACCURACY=<float>   after final test-set evaluation (0.0–1.0).
 - Must finish in under 175 seconds total wall time.
@@ -41,10 +41,22 @@ ARCHITECTURE & TRAINING SPECIFICATION:
         capture_output=True, text=True, timeout=CLAUDE_TIMEOUT,
     )
 
-    code = result.stdout.strip()
-    code = re.sub(r"^```python\s*\n?", "", code)
-    code = re.sub(r"\n?```\s*$", "", code)
+    code = _extract_code(result.stdout)
+    if not code:
+        raise ValueError(f"No Python code found in claude output for gen={gen} child={k}\n{result.stdout[:300]}")
 
     model_file.write_text(code)
     print(f"  Written: {len(code)} chars")
     return model_file
+
+
+def _extract_code(text: str) -> str:
+    """Extract first ```python ... ``` block. Fall back to raw text if it looks like code."""
+    match = re.search(r"```python\s*\n(.*?)```", text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    # No fences — accept if it starts with a Python keyword
+    stripped = text.strip()
+    if stripped.startswith(("import ", "from ", "#!")):
+        return stripped
+    return ""
