@@ -1,12 +1,12 @@
 """Step 3: Rank children, call Claude to mutate prompts for next generation."""
 import json
+import subprocess
 from pathlib import Path
-import anthropic
 
 ROOT = Path(__file__).parent.parent
 NUM_CHILDREN = 5
 TOP_K = 3
-MODEL = "claude-opus-4-6"
+CLAUDE_TIMEOUT = 120
 
 
 def evolve_generation(gen: int) -> float:
@@ -79,12 +79,17 @@ Format your response as exactly {NUM_CHILDREN} sections.
 Each section MUST start with the exact marker: === CHILD_K === (where K is 0 to 4).
 """
 
-    client = anthropic.Anthropic()
-    response = client.messages.create(
-        model=MODEL, max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
+    print("  Calling claude for mutations ...")
+    proc = subprocess.Popen(
+        ["claude", "--print", prompt],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
     )
-    return _parse_sections(response.content[0].text, NUM_CHILDREN)
+    lines = []
+    for line in proc.stdout:
+        print(f"  | {line}", end="", flush=True)
+        lines.append(line)
+    proc.wait(timeout=CLAUDE_TIMEOUT)
+    return _parse_sections("".join(lines), NUM_CHILDREN)
 
 
 def _parse_sections(text: str, n: int) -> list[str]:
