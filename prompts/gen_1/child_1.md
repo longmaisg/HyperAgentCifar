@@ -1,25 +1,27 @@
-# Hyperparameter Mutation — Higher LR + Larger Batch
+# Mutation — Larger Batch + Aggressive Time Guard
 
-Rationale: The parent was killed at 182s. Increasing batch size to 256 cuts per-epoch time by ~30%; raising lr to 0.05 compensates for fewer gradient steps so accuracy does not regress. Momentum Nesterov improves convergence at higher lr.
+**Change:** Batch size 256→512 to halve per-epoch time. Also tighten the time guard so the process never approaches the kill wall.
 
-## Architecture
-- Identical to CHILD_0
+## Time Budget
+- Hard wall-clock limit: 60 seconds.
+- After epoch 1, record epoch1_time. Set remaining_epochs = max(1, floor(40 / epoch1_time)).
+- If epoch1_time > 35s, stop after epoch 1 and report results immediately.
+
+## Architecture (unchanged)
 - Input: 32x32 RGB (CIFAR-10, 10 classes)
 - Conv block 1: Conv2d(3→32, 3x3, pad=1) → BN → ReLU → MaxPool(2)
 - Conv block 2: Conv2d(32→64, 3x3, pad=1) → BN → ReLU → MaxPool(2)
-- Conv block 3: Conv2d(64→128, 3x3, pad=1) → BN → ReLU → MaxPool(2)
-- Flatten → Linear(2048→256) → ReLU → Dropout(0.5) → Linear(256→10)
+- Flatten → Linear(64*8*8 → 128) → ReLU → Dropout(0.3) → Linear(128 → 10)
 
 ## Training
-- Optimizer: SGD, lr=0.05, momentum=0.9, nesterov=True, weight_decay=1e-4
-- Scheduler: StepLR(step_size=3, gamma=0.5)
-- Epochs: 3
-- Batch size: 256
+- Optimizer: SGD, lr=0.05, momentum=0.9, weight_decay=1e-4
+- Scheduler: CosineAnnealingLR(T_max = total_epochs)
+- Epochs: dynamic (see time budget)
+- **Batch size: 512** (key mutation — fewer steps per epoch, faster wall-clock)
 - Loss: CrossEntropyLoss
 
 ## Augmentation
 - RandomHorizontalFlip
-- RandomCrop(32, padding=4)
 - Normalize mean=(0.4914, 0.4822, 0.4465), std=(0.2470, 0.2435, 0.2616)
 
 ---

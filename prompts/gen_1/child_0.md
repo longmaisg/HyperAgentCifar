@@ -1,22 +1,25 @@
-# Elitism — Exact Copy of Generation 0 Best
+# Elitism — Exact Copy of Seed
 
-## Architecture
+## Time Budget
+- Hard wall-clock limit: 60 seconds. Process is killed at 60s.
+- Target: complete at least 2 epochs within 55 seconds.
+- After epoch 1, compute elapsed time and set remaining_epochs = max(1, floor(45 / epoch1_time)).
+
+## Architecture (keep small and fast)
 - Input: 32x32 RGB (CIFAR-10, 10 classes)
 - Conv block 1: Conv2d(3→32, 3x3, pad=1) → BN → ReLU → MaxPool(2)
 - Conv block 2: Conv2d(32→64, 3x3, pad=1) → BN → ReLU → MaxPool(2)
-- Conv block 3: Conv2d(64→128, 3x3, pad=1) → BN → ReLU → MaxPool(2)
-- Flatten → Linear(2048→256) → ReLU → Dropout(0.5) → Linear(256→10)
+- Flatten → Linear(64*8*8 → 128) → ReLU → Dropout(0.3) → Linear(128 → 10)
 
 ## Training
-- Optimizer: SGD, lr=0.01, momentum=0.9, weight_decay=1e-4
-- Scheduler: StepLR(step_size=5, gamma=0.5)
-- Epochs: 2 (was killed at 182s with 3 epochs; cap at 2 to stay under 175s)
-- Batch size: 128
+- Optimizer: SGD, lr=0.05, momentum=0.9, weight_decay=1e-4
+- Scheduler: CosineAnnealingLR
+- Epochs: dynamic (measure epoch 1, then adjust)
+- Batch size: 256
 - Loss: CrossEntropyLoss
 
 ## Augmentation
 - RandomHorizontalFlip
-- RandomCrop(32, padding=4)
 - Normalize mean=(0.4914, 0.4822, 0.4465), std=(0.2470, 0.2435, 0.2616)
 
 ---

@@ -1,32 +1,26 @@
-# Novel Exploration — Residual Blocks + Global Average Pooling
+# Exploration — Depthwise Separable Convs + Label Smoothing
 
-Rationale: Replace flat conv stack with three residual blocks (skip connections stabilize training and allow higher lr). Use Global Average Pooling instead of a large FC layer — this cuts ~500K params, leaving room for wider channels (32→64→128) and produces a regularization effect similar to Dropout. Result: ~290K params, faster forward pass, and better gradient flow. Train with OneCycleLR for aggressive warm-up in limited epochs.
+**Novel idea:** Replace standard convolutions with depthwise-separable blocks (MobileNet style) to cut FLOPs by ~8–9x while keeping receptive field. Add a third conv stage (cheap at this width) and use label smoothing for better generalization per epoch.
+
+## Time Budget
+- Hard wall-clock limit: 60 seconds.
+- After epoch 1, set remaining_epochs = max(2, floor(50 / epoch1_time)).
+- DS convs are ~4x cheaper than standard convs → expect 4+ epochs feasible.
 
 ## Architecture
-```
-Input (3, 32, 32)
-│
-ResBlock1: [Conv(3→32,3x3,pad=1)→BN→ReLU→Conv(32→32,3x3,pad=1)→BN]
-           + shortcut Conv(3→32,1x1) → ReLU → MaxPool(2)   [16x16]
-│
-ResBlock2: [Conv(32→64,3x3,pad=1)→BN→ReLU→Conv(64→64,3x3,pad=1)→BN]
-           + shortcut Conv(32→64,1x1) → ReLU → MaxPool(2)  [8x8]
-│
-ResBlock3: [Conv(64→128,3x3,pad=1)→BN→ReLU→Conv(128→128,3x3,pad=1)→BN]
-           + shortcut Conv(64→128,1x1) → ReLU → MaxPool(2) [4x4]
-│
-GlobalAvgPool → (128,)
-│
-Dropout(0.3) → Linear(128→10)
-```
-- Estimated params: ~290K (well under 1M)
+- Input: 32x32 RGB (CIFAR-10, 10 classes)
+- **DS block 1:** DepthwiseConv2d(3→3, 3x3, pad=1) + PointwiseConv2d(3→32, 1x1) → BN → ReLU → MaxPool(2)  →16x16
+- **DS block 2:** DepthwiseConv2d(32→32, 3x3, pad=1) + PointwiseConv2d(32→64, 1x1) → BN → ReLU → MaxPool(2) → 8x8
+- **DS block 3:** DepthwiseConv2d(64→64, 3x3, pad=1) + PointwiseConv2d(64→64, 1x1) → BN → ReLU → MaxPool(2) → 4x4
+- AdaptiveAvgPool2d(1) → Flatten → Linear(64 → 10)
+- No large FC layer; global average pooling keeps params tiny (~30k total)
 
 ## Training
-- Optimizer: SGD, lr=0.1 (peak), momentum=0.9, weight_decay=1e-4, nesterov=True
-- Scheduler: OneCycleLR(max_lr=0.1, pct_start=0.3, epochs=3, steps_per_epoch=len(train_loader))
-- Epochs: 3
-- Batch size: 256
-- Loss: CrossEntropyLoss(label_smoothing=0.1)
+- Optimizer: SGD, lr=0.1, momentum=0.9, weight_decay=1e-4, nesterov=True
+- Scheduler: CosineAnnealingLR(T_max = total_epochs)
+- Epochs: dynamic (see time budget)
+- Batch size: 512
+- **Loss: CrossEntropyLoss with label_smoothing=0.1**
 
 ## Augmentation
 - RandomHorizontalFlip
