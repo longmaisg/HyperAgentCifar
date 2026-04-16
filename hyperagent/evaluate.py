@@ -1,6 +1,5 @@
 """Step 2: Run a child model, hard-kill at 3 min, write JSON log."""
 import json
-import re
 import subprocess
 import threading
 import time
@@ -82,18 +81,21 @@ def evaluate_child(gen: int, k: int, prompt_file: Path) -> dict:
 
 
 def _parse_epoch_line(line: str, elapsed: float, epoch_sec: float) -> dict | None:
-    """Parse 'Epoch N/M loss=X acc=Y' into a training curve entry."""
-    m = re.match(r"Epoch\s+(\d+)/(\d+)\s+loss=([\d.]+)\s+acc=([\d.]+)", line)
-    if not m:
+    """Parse 'EPOCH_JSON={...}' line into a training curve entry."""
+    if not line.startswith("EPOCH_JSON="):
         return None
-    return {
-        "epoch": int(m.group(1)),
-        "total_epochs": int(m.group(2)),
-        "loss": float(m.group(3)),
-        "acc": float(m.group(4)),
-        "elapsed_sec": round(elapsed, 1),
-        "epoch_sec": round(epoch_sec, 1),
-    }
+    try:
+        data = json.loads(line[len("EPOCH_JSON="):])
+        return {
+            "epoch": int(data["epoch"]),
+            "total_epochs": int(data["total"]),
+            "loss": float(data["loss"]),
+            "acc": float(data["acc"]),
+            "elapsed_sec": round(elapsed, 1),
+            "epoch_sec": round(epoch_sec, 1),
+        }
+    except (KeyError, ValueError, json.JSONDecodeError):
+        return None
 
 
 def _kill(proc: subprocess.Popen):
