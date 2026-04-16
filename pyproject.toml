@@ -5,6 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=0.95.0",
+    "matplotlib>=3.10.8",
     "numpy<2.0",
     "torch==2.2.2",
     "torchvision>=0.17.2",
