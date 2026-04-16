@@ -1,5 +1,6 @@
-"""Top-level HyperAgent loop. Usage: uv run main.py [--generations N] [--start-gen N]"""
+"""Top-level HyperAgent loop. Usage: uv run main.py [--generations N] [--start-gen N] [--fresh]"""
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -10,6 +11,27 @@ from hyperagent.evolve import evolve_generation
 
 ROOT = Path(__file__).parent
 NUM_CHILDREN = 5
+
+
+def clean_all():
+    """Delete all generated artifacts, keeping only the seed prompt (prompts/gen_0/)."""
+    dirs = ["models", "logs", "history"]
+    for d in dirs:
+        path = ROOT / d
+        if path.exists():
+            shutil.rmtree(path)
+            path.mkdir()
+            (path / ".gitkeep").touch()
+            print(f"  Cleared: {d}/")
+
+    # Remove all generated prompt dirs (gen_1, gen_2, ...), keep gen_0
+    prompts_dir = ROOT / "prompts"
+    for p in sorted(prompts_dir.iterdir()):
+        if p.is_dir() and p.name != "gen_0":
+            shutil.rmtree(p)
+            print(f"  Cleared: prompts/{p.name}/")
+
+    print("  Kept   : prompts/gen_0/ (seed)")
 
 
 def run_generation(gen: int):
@@ -49,7 +71,16 @@ def main():
     parser = argparse.ArgumentParser(description="HyperAgent CIFAR genetic loop")
     parser.add_argument("--generations", type=int, default=3)
     parser.add_argument("--start-gen", type=int, default=0)
+    parser.add_argument("--fresh", action="store_true",
+                        help="Delete all models/logs/history before starting")
     args = parser.parse_args()
+
+    if args.fresh:
+        print("\nStep 0 — Fresh start: deleting all generated artifacts")
+        print("  Keeping: prompts/gen_0/ (seed prompt)")
+        print("  Deleting: models/, logs/, history/, prompts/gen_1+/")
+        clean_all()
+        print()
 
     for gen in range(args.start_gen, args.start_gen + args.generations):
         best = run_generation(gen)
