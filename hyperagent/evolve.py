@@ -49,9 +49,19 @@ def _ask_claude_for_mutations(gen: int, top: list[dict]) -> list[str]:
     pairs = []
     for log in top:
         spec = Path(log["prompt_file"]).read_text()
+        curve = log.get("training_curve", [])
+        curve_str = "\n".join(
+            f"  Epoch {e['epoch']}/{e['total_epochs']} "
+            f"loss={e['loss']:.4f} acc={e['acc']:.4f} "
+            f"({e['epoch_sec']:.1f}s)"
+            for e in curve
+        ) or "  (no curve data)"
         pairs.append(
-            f"### Child {log['child']} — acc={log['val_accuracy']:.4f}, "
-            f"params={log['param_count']}, time={log['wall_time_sec']}s\n{spec}"
+            f"### Child {log['child']} — val_acc={log['val_accuracy']:.4f}, "
+            f"params={log['param_count']}, total_time={log['wall_time_sec']}s, "
+            f"killed={log.get('timed_out', False)}\n"
+            f"Training curve:\n{curve_str}\n\n"
+            f"Prompt spec:\n{spec}"
         )
 
     prompt = f"""You are the mutation operator in a genetic algorithm for CIFAR-10 model prompts.

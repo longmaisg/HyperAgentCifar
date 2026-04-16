@@ -1,5 +1,6 @@
 """Step 2: Run a child model, hard-kill at 3 min, write JSON log."""
 import json
+import re
 import subprocess
 import threading
 import time
@@ -31,12 +32,20 @@ def evaluate_child(gen: int, k: int, prompt_file: Path) -> dict:
     )
 
     # Hard-kill after MAX_WALL_SEC regardless of output
+    training_curve = []
+    prev_epoch_time = start
+
     timer = threading.Timer(MAX_WALL_SEC, _kill, [proc])
     timer.start()
     try:
         for line in proc.stdout:
+            now = time.time()
             print(f"  | {line}", end="", flush=True)
             stdout_lines.append(line)
+            epoch_entry = _parse_epoch_line(line.strip(), now - start, now - prev_epoch_time)
+            if epoch_entry:
+                training_curve.append(epoch_entry)
+                prev_epoch_time = now
         stderr_lines = proc.stderr.readlines()
         proc.wait()
     finally:
@@ -63,12 +72,28 @@ def evaluate_child(gen: int, k: int, prompt_file: Path) -> dict:
         "wall_time_sec": wall,
         "timed_out": timed_out,
         "param_exceeded": param_exceeded,
+        "training_curve": training_curve,
         "stderr_tail": stderr[-500:] if stderr else "",
     }
     log_file.write_text(json.dumps(log, indent=2))
     print(f"  acc={log['val_accuracy']:.4f}  params={params}"
           f"  time={wall}s  killed={timed_out}  over_params={param_exceeded}")
     return log
+
+
+def _parse_epoch_line(line: str, elapsed: float, epoch_sec: float) -> dict | None:
+    """Parse 'Epoch N/M loss=X acc=Y' into a training curve entry."""
+    m = re.match(r"Epoch\s+(\d+)/(\d+)\s+loss=([\d.]+)\s+acc=([\d.]+)", line)
+    if not m:
+        return None
+    return {
+        "epoch": int(m.group(1)),
+        "total_epochs": int(m.group(2)),
+        "loss": float(m.group(3)),
+        "acc": float(m.group(4)),
+        "elapsed_sec": round(elapsed, 1),
+        "epoch_sec": round(epoch_sec, 1),
+    }
 
 
 def _kill(proc: subprocess.Popen):
