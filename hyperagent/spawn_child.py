@@ -26,11 +26,15 @@ HARD RULES (never break these):
 - Output ONLY a single Python code block (```python ... ```). No prose before or after.
 - Print  PARAM_COUNT=<integer>  before training starts.
 - Print  VAL_ACCURACY=<float>   after final test-set evaluation (0.0–1.0).
-- Must finish in under 175 seconds total wall time.
 - Model must have under 1,000,000 parameters.
 - Use only torch and torchvision. No other ML libraries.
 - Data directory: {data_dir}
 - Exit code 0 on success, non-zero on error.
+
+PROGRESS PRINTING (required — so the user can see training is alive):
+- Each training epoch: print  Epoch <n>/<total> loss=<f> acc=<f>
+- Each test batch (every 10 batches): print  Test batch <n>/<total>
+- Use sys.stdout.flush() after each print to ensure immediate output.
 
 ARCHITECTURE & TRAINING SPECIFICATION:
 {spec}
