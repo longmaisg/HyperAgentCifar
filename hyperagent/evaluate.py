@@ -22,17 +22,29 @@ def evaluate_child(gen: int, k: int, prompt_file: Path) -> dict:
 
     timed_out = False
     start = time.time()
+    stdout_lines, stderr_lines = [], []
     try:
-        res = subprocess.run(
+        proc = subprocess.Popen(
             ["uv", "run", str(model_file)],
-            capture_output=True, text=True,
-            timeout=MAX_WALL_SEC, cwd=ROOT,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, cwd=ROOT,
         )
-        stdout, stderr = res.stdout, res.stderr
-    except subprocess.TimeoutExpired as e:
+        # Stream stdout live; collect stderr quietly
+        for line in proc.stdout:
+            print(f"  | {line}", end="", flush=True)
+            stdout_lines.append(line)
+            if time.time() - start > MAX_WALL_SEC:
+                proc.kill()
+                timed_out = True
+                break
+        stderr_lines = proc.stderr.readlines()
+        proc.wait()
+    except Exception as e:
         timed_out = True
-        stdout = (e.stdout or b"").decode(errors="replace")
-        stderr = (e.stderr or b"").decode(errors="replace") + "\nTIMEOUT"
+        stderr_lines.append(str(e))
+
+    stdout = "".join(stdout_lines)
+    stderr = "".join(stderr_lines)
 
     wall = round(time.time() - start, 2)
     val_acc = _parse_float(stdout, "VAL_ACCURACY")
