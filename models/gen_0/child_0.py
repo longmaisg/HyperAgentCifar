@@ -20,11 +20,13 @@ class SimpleCNN(nn.Module):
             nn.Conv2d(64, 128, 3, padding=1), nn.BatchNorm2d(128), nn.ReLU(), nn.MaxPool2d(2),
         )
         self.classifier = nn.Sequential(
-            nn.Linear(128 * 4 * 4, 256), nn.ReLU(), nn.Dropout(0.5), nn.Linear(256, 10)
+            nn.Flatten(),
+            nn.Linear(128 * 4 * 4, 256), nn.ReLU(), nn.Dropout(0.5),
+            nn.Linear(256, 10),
         )
 
     def forward(self, x):
-        return self.classifier(self.features(x).view(x.size(0), -1))
+        return self.classifier(self.features(x))
 
 
 def count_params(model):
@@ -35,12 +37,12 @@ def evaluate(model, loader, device):
     model.eval()
     correct = total = 0
     with torch.no_grad():
-        for inputs, labels in loader:
-            inputs, labels = inputs.to(device), labels.to(device)
+        for inputs, targets in loader:
+            inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             _, predicted = outputs.max(1)
-            total += labels.size(0)
-            correct += predicted.eq(labels).sum().item()
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
     return correct / total
 
 
@@ -61,8 +63,8 @@ def main():
     train_dataset = torchvision.datasets.CIFAR10(root=DATA_DIR, train=True, download=True, transform=train_transform)
     test_dataset = torchvision.datasets.CIFAR10(root=DATA_DIR, train=False, download=True, transform=test_transform)
 
-    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=2, pin_memory=False)
-    test_loader = DataLoader(test_dataset, batch_size=256, shuffle=False, num_workers=2, pin_memory=False)
+    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=2)
+    test_loader = DataLoader(test_dataset, batch_size=256, shuffle=False, num_workers=2)
 
     model = SimpleCNN().to(device)
     param_count = count_params(model)
@@ -73,61 +75,60 @@ def main():
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)
-
-    WALL_BUDGET = 150
-    planned_epochs = 3
-    total_epochs = planned_epochs
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
 
-    for e in range(1, total_epochs + 1):
-        model.train()
+    total_budget = 150
+    max_epochs = 3
+    actual_epochs = max_epochs
+
+    for epoch in range(1, actual_epochs + 1):
         epoch_start = time.time()
+        model.train()
         running_loss = 0.0
         correct = total = 0
 
-        for inputs, labels in train_loader:
-            inputs, labels = inputs.to(device), labels.to(device)
+        for inputs, targets in train_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
 
-            running_loss += loss.item() * inputs.size(0)
+            running_loss += loss.item() * targets.size(0)
             _, predicted = outputs.max(1)
-            total += labels.size(0)
-            correct += predicted.eq(labels).sum().item()
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
 
-        epoch_time = time.time() - epoch_start
+        scheduler.step()
 
-        # Adapt epoch count after first epoch
-        if e == 1:
-            max_epochs = math.floor(WALL_BUDGET / epoch_time)
-            total_epochs = min(planned_epochs, max(1, max_epochs))
-
-        train_loss = running_loss / total
+        avg_loss = running_loss / total
         train_acc = correct / total
+        epoch_sec = time.time() - epoch_start
+
+        if epoch == 1:
+            estimated_total = epoch_sec * max_epochs
+            if estimated_total > total_budget:
+                actual_epochs = max(1, math.floor(total_budget / epoch_sec))
 
         val_acc = evaluate(model, test_loader, device)
 
         print("EPOCH_JSON=" + json.dumps({
-            "epoch": e,
-            "total": total_epochs,
-            "loss": round(train_loss, 4),
+            "epoch": epoch,
+            "total": actual_epochs,
+            "loss": round(avg_loss, 4),
             "acc": round(train_acc, 4),
-            "epoch_sec": round(epoch_time, 2)
+            "epoch_sec": round(epoch_sec, 2),
         }))
         sys.stdout.flush()
         print(f"VAL_ACCURACY={val_acc:.4f}")
         sys.stdout.flush()
 
-        scheduler.step()
-
-        if e >= total_epochs:
+        if epoch >= actual_epochs:
             break
 
-    sys.exit(0)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

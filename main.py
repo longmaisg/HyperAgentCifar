@@ -72,7 +72,7 @@ def run_generation(gen: int):
 
 def main():
     parser = argparse.ArgumentParser(description="HyperAgent CIFAR genetic loop")
-    parser.add_argument("--generations", type=int, default=3)
+    parser.add_argument("--generations", type=int, default=6)
     parser.add_argument("--start-gen", type=int, default=0)
     parser.add_argument("--fresh", action="store_false",
                         help="Delete all models/logs/history before starting")

@@ -1,1 +1,0 @@
-Fallback: simple CNN variant 0
