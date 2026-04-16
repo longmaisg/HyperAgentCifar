@@ -1,0 +1,93 @@
+{
+  "generation": 2,
+  "best_accuracy": 0.5939,
+  "leaderboard": [
+    {
+      "generation": 2,
+      "child": 2,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_2/child_2.md",
+      "val_accuracy": 0.5939,
+      "param_count": 310906,
+      "wall_time_sec": 46.31,
+      "timed_out": false,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 1,
+          "loss": 1.4717,
+          "acc": 0.4643,
+          "elapsed_sec": 45.9,
+          "epoch_sec": 38.37
+        }
+      ],
+      "stderr_tail": "tim/lr_scheduler.py:143: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate\n  warnings.warn(\"Detected call of `lr_scheduler.step()` before `optimizer.step()`. \"\n"
+    },
+    {
+      "generation": 2,
+      "child": 3,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_2/child_3.md",
+      "val_accuracy": 0.5304,
+      "param_count": 142058,
+      "wall_time_sec": 57.52,
+      "timed_out": false,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 10,
+          "loss": 1.5455,
+          "acc": 0.4312,
+          "elapsed_sec": 57.0,
+          "epoch_sec": 47.23
+        }
+      ],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 2,
+      "child": 0,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_2/child_0.md",
+      "val_accuracy": 0.4838,
+      "param_count": 142058,
+      "wall_time_sec": 60.06,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 1,
+          "loss": 1.5281,
+          "acc": 0.4411,
+          "elapsed_sec": 44.3,
+          "epoch_sec": 36.7
+        }
+      ],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 2,
+      "child": 1,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_2/child_1.md",
+      "val_accuracy": 0.0,
+      "param_count": 142058,
+      "wall_time_sec": 62.17,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [],
+      "stderr_tail": "tim/lr_scheduler.py:143: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate\n  warnings.warn(\"Detected call of `lr_scheduler.step()` before `optimizer.step()`. \"\n"
+    },
+    {
+      "generation": 2,
+      "child": 4,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_2/child_4.md",
+      "val_accuracy": 0.0,
+      "param_count": 142058,
+      "wall_time_sec": 62.16,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [],
+      "stderr_tail": "tim/lr_scheduler.py:143: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate\n  warnings.warn(\"Detected call of `lr_scheduler.step()` before `optimizer.step()`. \"\n"
+    }
+  ]
+}

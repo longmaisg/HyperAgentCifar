@@ -1,0 +1,21 @@
+{
+  "generation": 2,
+  "child": 2,
+  "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_2/child_2.md",
+  "val_accuracy": 0.5939,
+  "param_count": 310906,
+  "wall_time_sec": 46.31,
+  "timed_out": false,
+  "param_exceeded": false,
+  "training_curve": [
+    {
+      "epoch": 1,
+      "total_epochs": 1,
+      "loss": 1.4717,
+      "acc": 0.4643,
+      "elapsed_sec": 45.9,
+      "epoch_sec": 38.37
+    }
+  ],
+  "stderr_tail": "tim/lr_scheduler.py:143: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate\n  warnings.warn(\"Detected call of `lr_scheduler.step()` before `optimizer.step()`. \"\n"
+}
