@@ -1,0 +1,12 @@
+{
+  "generation": 1,
+  "child": 2,
+  "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_2.md",
+  "val_accuracy": 0.0,
+  "param_count": 1278090,
+  "wall_time_sec": 3.79,
+  "timed_out": false,
+  "param_exceeded": true,
+  "training_curve": [],
+  "stderr_tail": "`.venv` and will be ignored; use `--active` to target the active environment instead\nTraceback (most recent call last):\n  File \"/Users/longmai/projects/HyperAgentCifar/models/gen_1/child_2.py\", line 119, in <module>\n    main()\n  File \"/Users/longmai/projects/HyperAgentCifar/models/gen_1/child_2.py\", line 72, in main\n    assert param_count < 1_000_000, f\"Model has {param_count} params, exceeds 1M limit\"\n           ^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Model has 1278090 params, exceeds 1M limit\n"
+}
