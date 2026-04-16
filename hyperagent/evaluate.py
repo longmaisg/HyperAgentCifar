@@ -111,13 +111,15 @@ def _kill(proc: subprocess.Popen):
 
 
 def _parse_float(text: str, key: str) -> float | None:
+    """Return the LAST occurrence of key=<float> — handles per-epoch VAL_ACCURACY prints."""
+    result = None
     for line in (text or "").splitlines():
         if line.startswith(f"{key}="):
             try:
-                return float(line.split("=", 1)[1].strip())
+                result = float(line.split("=", 1)[1].strip())
             except ValueError:
                 pass
-    return None
+    return result
 
 
 def _parse_int(text: str, key: str) -> int | None:

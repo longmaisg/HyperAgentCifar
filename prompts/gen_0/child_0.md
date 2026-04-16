@@ -10,7 +10,7 @@
 ## Training
 - Optimizer: SGD, lr=0.01, momentum=0.9, weight_decay=1e-4
 - Scheduler: StepLR(step_size=5, gamma=0.5)
-- Epochs: 10
+- Epochs: 3 (CPU budget ~170s; measure first epoch and reduce if needed)
 - Batch size: 128
 - Loss: CrossEntropyLoss
 

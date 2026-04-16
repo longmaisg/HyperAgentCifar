@@ -25,17 +25,21 @@ def spawn_child(gen: int, k: int, prompt_file: Path) -> Path:
 HARD RULES (never break these):
 - Output ONLY a single Python code block (```python ... ```). No prose before or after.
 - Print  PARAM_COUNT=<integer>  before training starts.
-- Print  VAL_ACCURACY=<float>   after final test-set evaluation (0.0–1.0).
 - Model must have under 1,000,000 parameters.
 - Use only torch and torchvision. No other ML libraries.
 - Data directory: {data_dir}
 - Exit code 0 on success, non-zero on error.
+- Total wall time budget is ~170 seconds on CPU (no GPU). Design epoch count accordingly.
+  A safe rule: if 1 epoch takes T seconds, use at most floor(150 / T) epochs.
+  Measure the first epoch and adapt if needed.
 
 PROGRESS PRINTING (required — use these exact formats):
 - Use `import time` and record `epoch_start = time.time()` at the start of each epoch.
-- After each training epoch compute `epoch_sec = round(time.time() - epoch_start, 2)` then print:
-    import json; print("EPOCH_JSON=" + json.dumps({{"epoch": epoch, "total": total_epochs, "loss": round(loss, 4), "acc": round(acc, 4), "epoch_sec": epoch_sec}})); sys.stdout.flush()
-- Each test batch (every 10 batches): print  Test batch <n>/<total>  then sys.stdout.flush()
+- After EVERY training epoch: run a full test-set evaluation, then print both lines:
+    import json; print("EPOCH_JSON=" + json.dumps({{"epoch": e, "total": total_epochs, "loss": round(loss,4), "acc": round(train_acc,4), "epoch_sec": round(time.time()-epoch_start,2)}})); sys.stdout.flush()
+    print(f"VAL_ACCURACY={{val_acc:.4f}}"); sys.stdout.flush()
+- This ensures a valid VAL_ACCURACY is always on stdout even if the process is killed early.
+- The LAST VAL_ACCURACY line printed is used as the final score.
 
 ARCHITECTURE & TRAINING SPECIFICATION:
 {spec}
