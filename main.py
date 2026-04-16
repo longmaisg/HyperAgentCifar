@@ -8,6 +8,7 @@ from pathlib import Path
 from hyperagent.spawn_child import spawn_child
 from hyperagent.evaluate import evaluate_child
 from hyperagent.evolve import evolve_generation
+from hyperagent.plot import plot_generation
 
 ROOT = Path(__file__).parent
 NUM_CHILDREN = 5
@@ -54,6 +55,8 @@ def run_generation(gen: int):
         k = int(prompt_file.stem.split("_")[1])
         spawn_child(gen, k, prompt_file)
         evaluate_child(gen, k, prompt_file)
+
+    plot_generation(gen)
 
     best_acc = evolve_generation(gen)
 
