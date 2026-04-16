@@ -1,0 +1,84 @@
+{
+  "generation": 1,
+  "best_accuracy": 0.5863,
+  "leaderboard": [
+    {
+      "generation": 1,
+      "child": 2,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_2.md",
+      "val_accuracy": 0.5863,
+      "param_count": 142058,
+      "wall_time_sec": 40.59,
+      "timed_out": false,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 1,
+          "loss": 1.5185,
+          "acc": 0.4451,
+          "elapsed_sec": 40.2,
+          "epoch_sec": 33.14
+        }
+      ],
+      "stderr_tail": "tim/lr_scheduler.py:143: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate\n  warnings.warn(\"Detected call of `lr_scheduler.step()` before `optimizer.step()`. \"\n"
+    },
+    {
+      "generation": 1,
+      "child": 0,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_0.md",
+      "val_accuracy": 0.5307,
+      "param_count": 545290,
+      "wall_time_sec": 53.66,
+      "timed_out": false,
+      "param_exceeded": false,
+      "training_curve": [
+        {
+          "epoch": 1,
+          "total_epochs": 1,
+          "loss": 1.5881,
+          "acc": 0.4212,
+          "elapsed_sec": 53.3,
+          "epoch_sec": 45.63
+        }
+      ],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 1,
+      "child": 1,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_1.md",
+      "val_accuracy": 0.0,
+      "param_count": 545290,
+      "wall_time_sec": 62.21,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 1,
+      "child": 3,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_3.md",
+      "val_accuracy": 0.0,
+      "param_count": 545290,
+      "wall_time_sec": 62.19,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    },
+    {
+      "generation": 1,
+      "child": 4,
+      "prompt_file": "/Users/longmai/projects/HyperAgentCifar/prompts/gen_1/child_4.md",
+      "val_accuracy": 0.0,
+      "param_count": 8101,
+      "wall_time_sec": 62.2,
+      "timed_out": true,
+      "param_exceeded": false,
+      "training_curve": [],
+      "stderr_tail": "warning: `VIRTUAL_ENV=/Users/longmai/projects/Test/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+    }
+  ]
+}
