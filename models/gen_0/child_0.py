@@ -1,10 +1,12 @@
 import sys
+import time
 import json
+import math
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
-from torchvision import datasets, transforms
+import torchvision
+import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
 DATA_DIR = "/Users/longmai/projects/HyperAgentCifar/data"
@@ -12,29 +14,38 @@ DATA_DIR = "/Users/longmai/projects/HyperAgentCifar/data"
 class SimpleCNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.block1 = nn.Sequential(
-            nn.Conv2d(3, 32, 3, padding=1), nn.BatchNorm2d(32), nn.ReLU(), nn.MaxPool2d(2)
-        )
-        self.block2 = nn.Sequential(
-            nn.Conv2d(32, 64, 3, padding=1), nn.BatchNorm2d(64), nn.ReLU(), nn.MaxPool2d(2)
-        )
-        self.block3 = nn.Sequential(
-            nn.Conv2d(64, 128, 3, padding=1), nn.BatchNorm2d(128), nn.ReLU(), nn.MaxPool2d(2)
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, 3, padding=1), nn.BatchNorm2d(32), nn.ReLU(), nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, 3, padding=1), nn.BatchNorm2d(64), nn.ReLU(), nn.MaxPool2d(2),
+            nn.Conv2d(64, 128, 3, padding=1), nn.BatchNorm2d(128), nn.ReLU(), nn.MaxPool2d(2),
         )
         self.classifier = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(128 * 4 * 4, 256), nn.ReLU(), nn.Dropout(0.5),
-            nn.Linear(256, 10)
+            nn.Linear(128 * 4 * 4, 256), nn.ReLU(), nn.Dropout(0.5), nn.Linear(256, 10)
         )
 
     def forward(self, x):
-        x = self.block1(x)
-        x = self.block2(x)
-        x = self.block3(x)
-        return self.classifier(x)
+        return self.classifier(self.features(x).view(x.size(0), -1))
+
+
+def count_params(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
+def evaluate(model, loader, device):
+    model.eval()
+    correct = total = 0
+    with torch.no_grad():
+        for inputs, labels in loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predicted = outputs.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
+    return correct / total
+
 
 def main():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
 
     train_transform = transforms.Compose([
         transforms.RandomHorizontalFlip(),
@@ -47,28 +58,33 @@ def main():
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
     ])
 
-    train_dataset = datasets.CIFAR10(DATA_DIR, train=True, download=True, transform=train_transform)
-    test_dataset = datasets.CIFAR10(DATA_DIR, train=False, download=True, transform=test_transform)
-    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=2)
-    test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=2)
+    train_dataset = torchvision.datasets.CIFAR10(root=DATA_DIR, train=True, download=True, transform=train_transform)
+    test_dataset = torchvision.datasets.CIFAR10(root=DATA_DIR, train=False, download=True, transform=test_transform)
+
+    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=2, pin_memory=False)
+    test_loader = DataLoader(test_dataset, batch_size=256, shuffle=False, num_workers=2, pin_memory=False)
 
     model = SimpleCNN().to(device)
-    param_count = sum(p.numel() for p in model.parameters())
+    param_count = count_params(model)
     print(f"PARAM_COUNT={param_count}")
     sys.stdout.flush()
 
-    assert param_count < 1_000_000, f"Model has {param_count} parameters, exceeds 1M limit"
+    assert param_count < 1_000_000, f"Model has {param_count} params, exceeds 1M limit"
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)
-    scheduler = StepLR(optimizer, step_size=5, gamma=0.5)
 
-    total_epochs = 10
-    for epoch in range(1, total_epochs + 1):
+    WALL_BUDGET = 150
+    planned_epochs = 3
+    total_epochs = planned_epochs
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+
+    for e in range(1, total_epochs + 1):
         model.train()
+        epoch_start = time.time()
         running_loss = 0.0
-        correct = 0
-        total = 0
+        correct = total = 0
+
         for inputs, labels in train_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             optimizer.zero_grad()
@@ -76,41 +92,42 @@ def main():
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+
             running_loss += loss.item() * inputs.size(0)
             _, predicted = outputs.max(1)
+            total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
-            total += inputs.size(0)
-        scheduler.step()
-        epoch_loss = running_loss / total
-        epoch_acc = correct / total
+
+        epoch_time = time.time() - epoch_start
+
+        # Adapt epoch count after first epoch
+        if e == 1:
+            max_epochs = math.floor(WALL_BUDGET / epoch_time)
+            total_epochs = min(planned_epochs, max(1, max_epochs))
+
+        train_loss = running_loss / total
+        train_acc = correct / total
+
+        val_acc = evaluate(model, test_loader, device)
+
         print("EPOCH_JSON=" + json.dumps({
-            "epoch": epoch, "total": total_epochs,
-            "loss": round(epoch_loss, 4), "acc": round(epoch_acc, 4)
+            "epoch": e,
+            "total": total_epochs,
+            "loss": round(train_loss, 4),
+            "acc": round(train_acc, 4),
+            "epoch_sec": round(epoch_time, 2)
         }))
         sys.stdout.flush()
+        print(f"VAL_ACCURACY={val_acc:.4f}")
+        sys.stdout.flush()
 
-    model.eval()
-    correct = 0
-    total = 0
-    total_batches = len(test_loader)
-    with torch.no_grad():
-        for batch_idx, (inputs, labels) in enumerate(test_loader):
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            _, predicted = outputs.max(1)
-            correct += predicted.eq(labels).sum().item()
-            total += inputs.size(0)
-            if batch_idx % 10 == 0:
-                print(f"Test batch {batch_idx}/{total_batches}")
-                sys.stdout.flush()
+        scheduler.step()
 
-    val_accuracy = correct / total
-    print(f"VAL_ACCURACY={val_accuracy}")
-    sys.stdout.flush()
+        if e >= total_epochs:
+            break
+
+    sys.exit(0)
+
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+    main()
